@@ -3,7 +3,6 @@
 
 # In[5]:
 
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,9 +18,7 @@ import pickle
 import re
 import seaborn as sns
 
-
 # In[30]:
-
 
 courses = pd.read_csv('course.csv',encoding='gbk')
 #courses.columns = ['courseid', 'name', 'description', 'prerequisites','term']
@@ -30,9 +27,7 @@ users = pd.read_csv('user.csv')
 ratings = pd.read_csv('rating.csv')
 #ratings.columns = ['userid', 'courseid', 'rating']
 
-
 # In[14]:
-
 
 #courses.shape
 #users.shape
@@ -89,15 +84,12 @@ def informed_train_test(rating_df, train_ratio):
 
 # In[34]:
 
-
 train, test, raw_train_df = informed_train_test(ratings, .8)
 
-
-# Now let's train a BPR model and look at its accuracy.
-# We'll use two metrics of accuracy: precision@k and ROC AUC. Both are ranking metrics: to compute them, we'll be constructing recommendation lists for all of our users, and checking the ranking of known positive movies. For precision at k we'll be looking at whether they are within the first k results on the list; for AUC, we'll be calculating the probability that any known positive is higher on the list than a random negative example.
+# Now train a BPR model and look at its accuracy.
+# Used two metrics of accuracy: precision@k and ROC AUC. Both are ranking metrics: to compute them, we'll be constructing recommendation lists for all of our users, and checking the ranking of known positive movies. For precision at k we'll be looking at whether they are within the first k results on the list; for AUC, we'll be calculating the probability that any known positive is higher on the list than a random negative example.
 
 # In[67]:
-
 
 start_time = time.time()
 model=LightFM(no_components=115,learning_rate=0.027,loss='warp')
@@ -114,11 +106,9 @@ train_precision = precision_at_k(model, train, k=10).mean()
 test_precision = precision_at_k(model, test, k=10, train_interactions=train).mean()
 print('Precision: train %.2f, test %.2f.' % (train_precision, test_precision))
 
-
 # The WARP model, on the other hand, optimises for precision@k---we should expect its performance to be better on precision.
 
 # In[68]:
-
 
 model = LightFM(learning_rate=0.05, loss='bpr')
 model.fit(train, epochs=10)
@@ -132,9 +122,7 @@ test_auc = auc_score(model, test, train_interactions=train).mean()
 print('Precision: train %.2f, test %.2f.' % (train_precision, test_precision))
 print('AUC: train %.2f, test %.2f.' % (train_auc, test_auc))
 
-
 # In[36]:
-
 
 user_item_matrix = raw_train_df.pivot(index='userid', columns='courseid', values='rating')
 user_item_matrix.fillna(0, inplace = True)
@@ -142,9 +130,7 @@ user_item_matrix = user_item_matrix.astype(np.int32)
 print(user_item_matrix.shape)
 user_item_matrix.head()
 
-
 # In[57]:
-
 
 def user_item_dikts(interaction_matrix, items_df):
     user_ids = list(interaction_matrix.index)
@@ -160,9 +146,7 @@ def user_item_dikts(interaction_matrix, items_df):
     
     return user_dikt, item_dikt
 
-
 # In[58]:
-
 
 def similar_recommendation(model, interaction_matrix, user_id, user_dikt, 
                                item_dikt,threshold = 0,number_rec_items = 15):
@@ -195,9 +179,7 @@ def similar_recommendation(model, interaction_matrix, user_id, user_dikt,
         counter+=1
 #     return score_list
 
-
 # In[59]:
-
 
 def users_for_item(model,interaction_matrix,courseid,number_of_user):
   
@@ -209,9 +191,7 @@ def users_for_item(model,interaction_matrix,courseid,number_of_user):
     user_list = list(interaction_matrix.index[scores.sort_values(ascending=False).head(number_of_user).index])
     return user_list
 
-
 # In[60]:
-
 
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -241,21 +221,15 @@ def also_enrolled_recommendation(item_emdedding_distance_matrix, item_id,
         counter+=1
     return recommended_items
 
-
 # In[61]:
-
 
 user_dikt, item_dikt = user_item_dikts(user_item_matrix, courses)
 
-
 # In[62]:
-
 
 similar_recommendation(model, user_item_matrix, 5190114, user_dikt, item_dikt,threshold = 7)
 
-
 # In[63]:
-
 
 item_embedings = item_emdedding_distance_matrix(model,user_item_matrix)
 also_enrolled_recommendation(item_embedings,'BINF6111' ,item_dikt)
