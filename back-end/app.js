@@ -82,7 +82,7 @@ app.post('/addhistory', (req, res) =>{
 		})
 		.catch(err => res.status(400).json('unable to add history'))
 })
-
+//get data
 app.get('/gethistory', (req,res)=>{
 	db.select('*').from('enrolhistory')
 	.then(item => {
